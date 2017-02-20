@@ -11,7 +11,7 @@ export class Router extends Component {
     }
 
     handleLinkClick = (route) => {
-        this.setState({ route })
+        this.setState({route})
 
         history.pushState(null, '', route)
     }
@@ -25,6 +25,12 @@ export class Router extends Component {
         return {
             route: this.state.route,
             linkHandler: this.handleLinkClick
+        }
+    }
+
+    componentDidMount() {
+        window.onpopstate = () => {
+            this.setState({route: getCurrentPath()})
         }
     }
 
