@@ -4,19 +4,21 @@ import "./App.css";
 import {TodoForm, TodoList, Footer} from "./components/todo";
 import {addTodo, generateId, findById, toggleTodo, updateTodo, removeTodo, filterTodos} from "./lib/todoHelpers";
 import {pipe, partial} from "./lib/utils";
+import {loadTodos, createTodo, saveTodo, destroyTodo} from "./lib/todoService"
 
 class App extends Component {
     state = {
-        todos: [
-            { id: 1, name: 'learn scala', isComplete: true },
-            { id: 2, name: 'lean react', isComplete: false },
-            { id: 3, name: 'do stuff', isComplete: true }
-        ],
+        todos: [],
         currentTodo: ''
     }
 
     static contextTypes = {
         route: React.PropTypes.string
+    }
+
+    componentDidMount() {
+        loadTodos()
+            .then(todos => this.setState({todos}))
     }
 
     handleInputChange = (evt) => {
@@ -39,6 +41,13 @@ class App extends Component {
             currentTodo: '',
             errorMessage: ''
         })
+        createTodo(newTodo)
+            .then(() => this.showTempMessage('Todo Added'))
+    }
+
+    showTempMessage = (msg) => {
+        this.setState({message: msg})
+        setTimeout(() => this.setState({message: ''}), 2500)
     }
 
     handleEmptySubmit = (evt) => {
@@ -49,15 +58,21 @@ class App extends Component {
     }
 
     handleToggle = (id) => {
-        const getUpdatedTodos = pipe(findById, toggleTodo, partial(updateTodo, this.state.todos))
-        const updatedTodos = getUpdatedTodos(id, this.state.todos)
-        this.setState({ todos: updatedTodos })
+        const getToggledTodo = pipe(findById, toggleTodo)
+        const updated = getToggledTodo(id, this.state.todos)
+        const getUpdatedTodos = partial(updateTodo, this.state.todos)
+        const updatedTodos = getUpdatedTodos(updated)
+        this.setState({todos: updatedTodos})
+        saveTodo(updated)
+            .then(() => this.showTempMessage('Todo Updated'))
     }
 
     handleRemove = (id, evt) => {
         evt.preventDefault()
         const updatedTodos = removeTodo(this.state.todos, id)
-        this.setState({ todos: updatedTodos })
+        this.setState({todos: updatedTodos})
+        destroyTodo(id)
+            .then(() => this.showTempMessage('Todo Removed'))
     }
 
     render() {
@@ -71,6 +86,7 @@ class App extends Component {
                 </div>
                 <div className="Todo-App">
                     {this.state.errorMessage && <span className='error'>{this.state.errorMessage}</span>}
+                    {this.state.message && <span className='success'>{this.state.message}</span>}
                     <TodoForm handleInputChange={this.handleInputChange}
                               currentTodo={this.state.currentTodo}
                               handleSubmit={submitHandler}/>

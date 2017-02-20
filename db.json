@@ -1,0 +1,19 @@
+{
+  "todos": [
+    {
+      "id": 4,
+      "name": "Setup fetch",
+      "isComplete": false
+    },
+    {
+      "id": 57510,
+      "name": "Yaya awesome",
+      "isComplete": false
+    },
+    {
+      "id": 2377,
+      "name": "and another one",
+      "isComplete": false
+    }
+  ]
+}
